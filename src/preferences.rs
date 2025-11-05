@@ -1,0 +1,5 @@
+const SCALE: f32 = 1.0;
+const SCREEN_WIDTH_DEFAULT: u32 = 690;
+const SCREEN_HEIGHT_DEFAULT: u32 = 690;
+pub static SCREEN_WIDTH: u32 = ((SCREEN_WIDTH_DEFAULT as f32) * SCALE) as u32;
+pub static SCREEN_HEIGHT: u32 = ((SCREEN_HEIGHT_DEFAULT as f32) * SCALE) as u32;
