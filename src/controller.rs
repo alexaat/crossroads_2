@@ -68,7 +68,14 @@ impl Controller {
         }
     }
 
-    pub fn tick(&mut self) {}
+    pub fn tick(&mut self) {
+        if self.screen == Screens::MAIN {
+            self.model.update_model();
+            self.view.draw_model(&mut self.model);
+        } else if self.screen == Screens::STATISTICS {
+            self.view.draw_statistics(&self.model);
+        }
+    }
 
     pub fn get_random_destination() -> Destination {
         let r = rand::thread_rng().gen_range(0..3);

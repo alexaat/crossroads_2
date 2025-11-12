@@ -11,6 +11,8 @@ impl Model {
         vehicle_type: VehicleType,
     ) {
     }
+
+    pub fn update_model(&mut self) {}
 }
 
 #[derive(Clone, Debug, PartialEq)]
