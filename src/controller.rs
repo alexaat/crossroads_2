@@ -3,7 +3,6 @@ use crate::model::VehicleType;
 use crate::model::CARDINAL;
 use crate::Model;
 use crate::View;
-use rand::Rng;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 pub struct Controller {
@@ -78,7 +77,7 @@ impl Controller {
     }
 
     pub fn get_random_destination() -> Destination {
-        let r = rand::thread_rng().gen_range(0..3);
+        let r = rand::random_range(0..3);
         match r {
             0 => Destination::LEFT,
             1 => Destination::AHEAD,
@@ -87,7 +86,7 @@ impl Controller {
     }
 
     pub fn get_random_origin() -> CARDINAL {
-        let r = rand::thread_rng().gen_range(0..4);
+        let r = rand::random_range(0..4);
         match r {
             0 => CARDINAL::WEST,
             1 => CARDINAL::NORTH,
@@ -98,7 +97,7 @@ impl Controller {
 
     pub fn get_random_type() -> VehicleType {
         //random vehicle type
-        let r = rand::thread_rng().gen_range(0..3);
+        let r = rand::random_range(0..3);
         match r {
             0 => VehicleType::BlueCar,
             1 => VehicleType::GreenCar,
