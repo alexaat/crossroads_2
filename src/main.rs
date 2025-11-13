@@ -12,6 +12,7 @@ mod preferences;
 use crate::preferences::SCREEN_HEIGHT;
 use crate::preferences::SCREEN_WIDTH;
 
+
 fn main() {
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();

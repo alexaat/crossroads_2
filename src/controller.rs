@@ -12,9 +12,9 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn new(model: Model, view: View) -> Self {
+    pub fn new(model: Model, view: View) -> Controller {
         let screen = Screens::MAIN;
-        Self {
+        Controller {
             model,
             view,
             screen,

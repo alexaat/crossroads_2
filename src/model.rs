@@ -1,5 +1,6 @@
 use crate::preferences::*;
 
+
 pub struct Model {
     pub lines: Vec<Line>,
 }
@@ -189,5 +190,6 @@ impl Line {
         Self { start, end, color }
     }
 }
+
 
 
