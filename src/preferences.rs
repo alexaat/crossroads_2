@@ -1,3 +1,5 @@
+use crate::model::Point;
+
 const SCALE: f32 = 1.0;
 const SCREEN_WIDTH_DEFAULT: u32 = 690;
 const SCREEN_HEIGHT_DEFAULT: u32 = 690;
@@ -18,3 +20,13 @@ pub static MARGIN_I32: i32 = MARGIN as i32;
 
 pub const LINE_LENGHT: i32 = 40;
 pub const LINE_GAP: i32 = 25;
+
+pub static TOP_LEFT: Point = Point{
+    x: (SCREEN_WIDTH_I32 - 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
+    y: (SCREEN_HEIGHT_I32 - 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
+};
+
+pub static BOTTOM_RIGHT: Point = Point{
+    x: (SCREEN_WIDTH_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
+    y: (SCREEN_HEIGHT_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
+};

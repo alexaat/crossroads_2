@@ -25,21 +25,12 @@ impl Model {
 
         let mut lines = vec![];
 
-        let top_left = Point::new(
-            (SCREEN_WIDTH_I32 - 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
-            (SCREEN_HEIGHT_I32 - 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
-        );
-        let bottom_right = Point::new(
-            (SCREEN_WIDTH_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
-            (SCREEN_HEIGHT_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
-        );
-
         //broken lines west side
         for i in 1..6 {
             let x = 0;
-            let y = top_left.y + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
+            let y = TOP_LEFT.y + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
             let start = Point::new(x, y);
-            let x = top_left.x;
+            let x = TOP_LEFT.x;
 
             let end: Point = Point::new(x, y);
             if i == 3 {
@@ -52,8 +43,8 @@ impl Model {
 
         //broken lines east side
         for i in 1..6 {
-            let x = bottom_right.x;
-            let y = top_left.y + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
+            let x = BOTTOM_RIGHT.x;
+            let y = TOP_LEFT.y + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
             let end = Point::new(x, y);
             let x = SCREEN_WIDTH_I32;
             let start: Point = Point::new(x, y);
@@ -67,10 +58,10 @@ impl Model {
 
         //broken lines north
         for i in 1..6 {
-            let x = top_left.x + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
+            let x = TOP_LEFT.x + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
             let y = 0;
             let start = Point::new(x, y);
-            let y = top_left.y;
+            let y = TOP_LEFT.y;
             let end: Point = Point::new(x, y);
             if i == 3 {
                 let line = Line::new(start, end, color);
@@ -82,8 +73,8 @@ impl Model {
 
         //broken lines south
         for i in 1..6 {
-            let x = top_left.x + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
-            let y = bottom_right.y;
+            let x = TOP_LEFT.x + CAR_WIDTH_I32 * i + MARGIN_I32 * i * 2;
+            let y = BOTTOM_RIGHT.y;
             let end = Point::new(x, y);
             let y = SCREEN_HEIGHT_I32;
             let start: Point = Point::new(x, y);
@@ -198,3 +189,5 @@ impl Line {
         Self { start, end, color }
     }
 }
+
+
