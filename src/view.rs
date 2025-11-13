@@ -1,6 +1,5 @@
 use crate::model::Line;
 use crate::Model;
-use sdl2::render::Texture;
 use crate::preferences::*;
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
