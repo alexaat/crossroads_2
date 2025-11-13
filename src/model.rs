@@ -50,6 +50,51 @@ impl Model {
             }
         }
 
+        //broken lines east side
+        for i in 1..6 {
+            let x = bottom_right.x;
+            let y = top_left.y + CAR_WIDTH as i32 * i + MARGIN as i32 * i * 2;
+            let end = Point::new(x, y);
+            let x = SCREEN_WIDTH as i32;
+            let start: Point = Point::new(x, y);
+            if i == 3 {
+                let line = Line::new(start, end, color);
+                lines.push(line.clone());
+            } else {
+                Self::build_broken_lines(&mut lines, start, end);
+            }
+        }
+
+        //broken lines north
+        for i in 1..6 {
+            let x = top_left.x + CAR_WIDTH as i32 * i + MARGIN as i32 * i * 2;
+            let y = 0;
+            let start = Point::new(x, y);
+            let y = top_left.y;
+            let end: Point = Point::new(x, y);
+            if i == 3 {
+                let line = Line::new(start, end, color);
+                lines.push(line.clone());
+            } else {
+                Self::build_broken_lines(&mut lines, start, end);
+            }
+        }
+
+        //broken lines south
+        for i in 1..6 {
+            let x = top_left.x + CAR_WIDTH as i32 * i + MARGIN as i32 * i * 2;
+            let y = bottom_right.y;
+            let end = Point::new(x, y);
+            let y = SCREEN_HEIGHT as i32;
+            let start: Point = Point::new(x, y);
+            if i == 3 {
+                let line = Line::new(start, end, color);
+                lines.push(line.clone());
+            } else {
+                Self::build_broken_lines(&mut lines, start, end);
+            }
+        }
+
         lines
     }
 
