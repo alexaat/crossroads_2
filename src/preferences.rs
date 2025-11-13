@@ -30,3 +30,5 @@ pub static BOTTOM_RIGHT: Point = Point{
     x: (SCREEN_WIDTH_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
     y: (SCREEN_HEIGHT_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
 };
+
+pub const TOP_LEFT_URL: &str = "assets/images/top_left.png";
