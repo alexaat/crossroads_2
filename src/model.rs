@@ -1,13 +1,16 @@
 use crate::preferences::*;
+use std::time::Instant;
 
 
 pub struct Model {
     pub lines: Vec<Line>,
+    pub cars: Vec<Car>,
 }
 impl Model {
     pub fn new() -> Self {
         Self {
             lines: Self::build_lines(),
+            cars: vec![],
         }
     }
 
@@ -191,5 +194,57 @@ impl Line {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Car {
+    pub id: u64,
+    pub origin: CARDINAL,
+    pub destination: Destination,
+    pub position: PointF,
+    pub rotation: f32,
+    pub speed: f32,
+    pub center: PointF,
+    pub odo: f32,
+    pub timer: Instant,
+    pub vehicle_type: VehicleType,
+}
+impl Car {
+    pub fn new(
+        id: u64,
+        origin: CARDINAL,
+        destination: Destination,
+        position: PointF,
+        rotation: f32,
+        center: PointF,
+    ) -> Self {
+        let speed = CAR_MAX_SPEED;
+        let odo: f32 = -(CAR_LENGTH as f32 * 0.5);
+        let timer: Instant = Instant::now();
+        let vehicle_type: VehicleType = VehicleType::BlueCar;
+
+        Self {
+            id,
+            origin,
+            destination,
+            position,
+            rotation,
+            speed,
+            center,
+            odo,
+            timer,
+            vehicle_type,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PointF {
+    pub x: f32,
+    pub y: f32,
+}
+impl PointF {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
 
 

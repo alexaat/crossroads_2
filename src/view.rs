@@ -8,17 +8,18 @@ use sdl2::video::Window;
 use sdl2::rect::Rect;
 use sdl2::image::LoadTexture;
 
-pub struct View {
+
+pub struct View  {
     canvas: Canvas<Window>,
     bg_color: (u8, u8, u8),
-    //scene: Scene
+    //texture_manager: TextureManager<'a>
+
 }
 
 impl View {
     pub fn new(canvas: Canvas<Window>, bg_color: (u8, u8, u8)) -> View {
 
         //let scene = Scene::new(&canvas);
-
         View { canvas, bg_color }
     }
 
@@ -110,21 +111,32 @@ trait Drawable {
 }
 
 
-// pub struct Scene{
-//     background_texture: Option<Box<Texture<'static>>>
-// }
-// impl Scene{
-//     pub fn new(canvas: &Canvas<Window>) -> Scene{
-//         let texture_creator = canvas.texture_creator();
-//         //let texture = texture_creator.load_texture(TOP_LEFT_URL);
+/*
+pub struct TextureManager<'a> {
+    pub textures: HashMap<String, Texture<'a>>,
+}
 
-//         let background_texture = if let Ok(t) = texture_creator.load_texture(TOP_LEFT_URL){
-//             Some(t)
-//         } else {
-//             None    
-//         };
+impl<'a> TextureManager<'a> {
+    pub fn new() -> Self {
+        Self {
+            textures: HashMap::new(),
+        }
+    }
+
+    pub fn load_texture(
+        &mut self,
+        name: &str,
+        path: &str,
+        texture_creator:  &'a TextureCreator<WindowContext>,
+    ) {
+        let texture = texture_creator.load_texture(path).unwrap();
+        self.textures.insert(name.to_string(), texture);
+    }
+
+    pub fn get(&self, name: &str) -> &Texture<'a> {
+        self.textures.get(name).unwrap()
+    }
+}
+*/
 
 
-//         return Scene { background_texture }
-//     }
-// }
