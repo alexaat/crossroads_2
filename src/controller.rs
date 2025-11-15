@@ -5,13 +5,13 @@ use crate::Model;
 use crate::View;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-pub struct Controller {
+pub struct Controller<'a> {
     model: Model,
-    view: View,
+    view: View<'a>,
     pub screen: Screens,
 }
 
-impl Controller {
+impl <'a>Controller<'a> {
     pub fn new(model: Model, view: View) -> Controller {
         let screen = Screens::MAIN;
         Controller {
