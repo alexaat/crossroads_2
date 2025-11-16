@@ -6,8 +6,8 @@ pub struct Model {
     pub lines: Vec<Line>,
     pub cars: Vec<Car>,
     pub statistics: Statisics,
-    pub top_left: Point,
-    pub bottom_right: Point,
+    // pub top_left: Point,
+    // pub bottom_right: Point,
 
 }
 impl Model {
@@ -16,14 +16,14 @@ impl Model {
             lines: Self::build_lines(),
             cars: vec![],
             statistics: Statisics::new(),
-            top_left: Point::new(
-                (SCREEN_WIDTH as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-                (SCREEN_HEIGHT as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            ),
-            bottom_right: Point::new(
-                (SCREEN_WIDTH as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-                (SCREEN_HEIGHT as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            ),
+            // top_left: Point::new(
+            //     (SCREEN_WIDTH as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
+            //     (SCREEN_HEIGHT as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
+            // ),
+            // bottom_right: Point::new(
+            //     (SCREEN_WIDTH as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
+            //     (SCREEN_HEIGHT as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
+            // ),
         }
     }
 
@@ -61,9 +61,9 @@ impl Model {
                 x = -car_length;
 
                 match destination {
-                    Destination::LEFT => y = self.top_left.y + margin,
-                    Destination::AHEAD => y = self.top_left.y + car_width + margin * 3,
-                    Destination::RIGHT => y = self.top_left.y + car_width * 2 + margin * 5,
+                    Destination::LEFT => y = TOP_LEFT.y + margin,
+                    Destination::AHEAD => y = TOP_LEFT.y + car_width + margin * 3,
+                    Destination::RIGHT => y = TOP_LEFT.y + car_width * 2 + margin * 5,
                 }
                 center_x = x + car_length / 2;
                 center_y = y + car_width / 2;
@@ -73,9 +73,9 @@ impl Model {
                 x = screen_width;
 
                 match destination {
-                    Destination::RIGHT => y = self.top_left.y + car_width * 3 + margin * 7,
-                    Destination::AHEAD => y = self.top_left.y + car_width * 4 + margin * 9,
-                    Destination::LEFT => y = self.top_left.y + car_width * 5 + margin * 11,
+                    Destination::RIGHT => y = TOP_LEFT.y + car_width * 3 + margin * 7,
+                    Destination::AHEAD => y = TOP_LEFT.y + car_width * 4 + margin * 9,
+                    Destination::LEFT => y = TOP_LEFT.y + car_width * 5 + margin * 11,
                 }
                 center_x = x + car_length / 2;
                 center_y = y + car_width / 2;
@@ -85,9 +85,9 @@ impl Model {
                 y = -car_length;
 
                 match destination {
-                    Destination::RIGHT => x = self.top_left.x + car_width * 3 + margin * 7,
-                    Destination::AHEAD => x = self.top_left.x + car_width * 4 + margin * 9,
-                    Destination::LEFT => x = self.top_left.x + car_width * 5 + margin * 11,
+                    Destination::RIGHT => x = TOP_LEFT.x + car_width * 3 + margin * 7,
+                    Destination::AHEAD => x = TOP_LEFT.x + car_width * 4 + margin * 9,
+                    Destination::LEFT => x = TOP_LEFT.x + car_width * 5 + margin * 11,
                 }
                 center_x = x + car_width / 2;
                 center_y = y + car_length / 2;
@@ -96,9 +96,9 @@ impl Model {
             CARDINAL::SOUTH => {
                 y = screen_heigth;
                 match destination {
-                    Destination::RIGHT => x = self.top_left.x + car_width * 2 + margin * 5,
-                    Destination::AHEAD => x = self.top_left.x + car_width + margin * 3,
-                    Destination::LEFT => x = self.top_left.x + margin,
+                    Destination::RIGHT => x = TOP_LEFT.x + car_width * 2 + margin * 5,
+                    Destination::AHEAD => x = TOP_LEFT.x + car_width + margin * 3,
+                    Destination::LEFT => x = TOP_LEFT.x + margin,
                 }
                 center_x = x + car_width / 2;
                 center_y = y + car_length / 2;
