@@ -18,8 +18,6 @@ pub struct View<'a>  {
 
 impl<'a> View<'a> {
     pub fn new(canvas: Canvas<Window>, bg_color: (u8, u8, u8), texture_manager: &'a TextureManager) -> View<'a> {
-        
-        //let scene = Scene::new(&canvas);
         View { canvas, bg_color,  texture_manager }
     }
 
@@ -129,7 +127,6 @@ trait Drawable {
     fn draw(&self, canvas: &mut Canvas<Window>);
 }
 
-
 pub struct TextureManager<'a> {
     pub textures: HashMap<String, Texture<'a>>
 
@@ -149,33 +146,3 @@ impl<'a> TextureManager<'a>{
         }       
     }
 }
-
-/*
-pub struct TextureManager<'a> {
-    pub textures: HashMap<String, Texture<'a>>,
-}
-
-impl<'a> TextureManager<'a> {
-    pub fn new() -> Self {
-        Self {
-            textures: HashMap::new(),
-        }
-    }
-
-    pub fn load_texture(
-        &mut self,
-        name: &str,
-        path: &str,
-        texture_creator:  &'a TextureCreator<WindowContext>,
-    ) {
-        let texture = texture_creator.load_texture(path).unwrap();
-        self.textures.insert(name.to_string(), texture);
-    }
-
-    pub fn get(&self, name: &str) -> &Texture<'a> {
-        self.textures.get(name).unwrap()
-    }
-}
-*/
-
-
