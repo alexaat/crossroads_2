@@ -1,4 +1,5 @@
 use crate::model::Point;
+use crate::model::PointF;
 
 const SCALE: f32 = 1.0;
 const SCREEN_WIDTH_DEFAULT: u32 = 690;
@@ -10,10 +11,11 @@ pub static SCREEN_HEIGHT_I32: i32 = SCREEN_HEIGHT as i32;
 pub static SCREEN_WIDTH_F32: f32 = SCREEN_WIDTH as f32;
 pub static SCREEN_HEIGHT_F32: f32 = SCREEN_HEIGHT as f32;
 
-const CAR_WIDTH_DEFAULT: u32 = 12;
-const CAR_LENGTH_DEFAULT: u32 = 20;
+pub const CAR_WIDTH_DEFAULT: u32 = 12;
+pub const CAR_LENGTH_DEFAULT: u32 = 20;
 pub static CAR_WIDTH: u32 = ((CAR_WIDTH_DEFAULT as f32) * SCALE) as u32;
 pub static CAR_LENGTH: u32 = ((CAR_LENGTH_DEFAULT as f32) * SCALE) as u32;
+pub static CAR_LENGTH_I32: i32 = CAR_LENGTH as i32;
 pub static CAR_WIDTH_I32: i32 = CAR_WIDTH as i32;
 pub static CAR_LENGTH_F32: f32 = CAR_LENGTH as f32;
 
@@ -34,6 +36,16 @@ pub static BOTTOM_RIGHT: Point = Point {
     y: (SCREEN_HEIGHT_I32 + 6 * (CAR_WIDTH_I32 + 2 * MARGIN_I32)) / 2,
 };
 
+pub static TOP_LEFT_F32: PointF = PointF {
+    x: TOP_LEFT.x as f32,
+    y: TOP_LEFT.y as f32,
+};
+
+pub static BOTTOM_RIGHT_F32: PointF = PointF {
+    x: BOTTOM_RIGHT.x as f32,
+    y: BOTTOM_RIGHT.y as f32,
+};
+
 pub const TOP_LEFT_URL: &str = "assets/images/top_left.png";
 pub const FONT_URL: &str = "assets/fonts/arialnarrow.ttf";
 
@@ -41,6 +53,17 @@ pub static CAR_MAX_SPEED: f32 = 5.0;
 
 pub static SEPARATION_DISTANCE: u32 = 10;
 pub static SEPARATION_DISTANCE_F32: f32 = SEPARATION_DISTANCE as f32;
+
+pub static SMALL_RADIUS: u32 = MARGIN + CAR_WIDTH / 2;
+pub static BIG_RADIUS: f32 = CAR_WIDTH as f32 * 3.5 + MARGIN as f32 * 7.0;
+pub static SMALL_RADIUS_F32: f32 = SMALL_RADIUS as f32;
+pub static BIG_RADIUS_F32: f32 = BIG_RADIUS as f32;
+
+pub static CAR_URLS: [&str; 3] = [
+    "assets/images/blue_car_20.png",
+    "assets/images/red_car_20.png",
+    "assets/images/green_car_20.png",
+];
 
 /*
 

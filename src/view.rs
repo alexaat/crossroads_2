@@ -1,5 +1,8 @@
 use super::*;
+use crate::model::Car;
+use crate::model::Destination;
 use crate::model::Line;
+use crate::model::VehicleType;
 use crate::preferences::*;
 use crate::ui::Text;
 use crate::Model;
@@ -137,6 +140,11 @@ impl<'a> View<'a> {
             line.draw(&mut self.canvas);
         }
 
+        //Draw cars
+        for car in &model.cars {
+            car.draw(&mut self.canvas);
+        }
+
         self.canvas.present();
     }
 
@@ -243,6 +251,47 @@ impl Drawable for Line {
         canvas.draw_line(start, end).unwrap();
     }
 }
+
+impl Drawable for Car {
+    fn draw(&self, canvas: &mut Canvas<Window>) {
+        let (r, g, b) = (255, 0, 0);
+
+        canvas.set_draw_color(Color::RGB(r, g, b));
+
+        let texture_creator = canvas.texture_creator();
+        let url = match self.vehicle_type {
+            VehicleType::BlueCar => CAR_URLS[0],
+            VehicleType::GreenCar => CAR_URLS[2],
+            VehicleType::RedCar => CAR_URLS[1],
+        };
+        let texture = texture_creator.load_texture(url).unwrap();
+        let src = Rect::new(0, 0, CAR_LENGTH_DEFAULT, CAR_WIDTH_DEFAULT);
+
+        let x = self.center.x as i32 - CAR_LENGTH_I32 / 2;
+        let y = self.center.y as i32 - CAR_WIDTH_I32 / 2;
+        let dst = Rect::new(x, y, CAR_LENGTH, CAR_WIDTH);
+        let center = Point::new(CAR_LENGTH_I32 / 2, CAR_WIDTH_I32 / 2);
+
+        canvas
+            .copy_ex(
+                &texture,
+                src,
+                dst,
+                self.rotation as f64,
+                center,
+                false,
+                false,
+            )
+            .unwrap();
+
+        match self.destination {
+            Destination::LEFT => canvas.set_draw_color(Color::RGB(0, 0, 255)),
+            Destination::AHEAD => canvas.set_draw_color(Color::RGB(0, 255, 0)),
+            Destination::RIGHT => canvas.set_draw_color(Color::RGB(255, 0, 0)),
+        };
+    }
+}
+
 trait Drawable {
     fn draw(&self, canvas: &mut Canvas<Window>);
 }

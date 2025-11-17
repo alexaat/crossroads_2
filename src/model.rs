@@ -1,7 +1,9 @@
 use crate::preferences::*;
+use std::f32::consts::PI;
 use std::time::Instant;
 
 pub struct Model {
+    pub counter: u64,
     pub lines: Vec<Line>,
     pub cars: Vec<Car>,
     pub statistics: Statisics,
@@ -9,6 +11,7 @@ pub struct Model {
 impl Model {
     pub fn new() -> Self {
         Self {
+            counter: 0,
             lines: Self::build_lines(),
             cars: vec![],
             statistics: Statisics::new(),
@@ -38,11 +41,11 @@ impl Model {
         let center_x;
         let center_y;
 
-        let car_length = CAR_LENGTH as i32;
-        let car_width = CAR_WIDTH as i32;
-        let margin = MARGIN as i32;
-        let screen_width = SCREEN_WIDTH as i32;
-        let screen_heigth = SCREEN_HEIGHT as i32;
+        let car_length = CAR_LENGTH_I32;
+        let car_width = CAR_WIDTH_I32;
+        let margin = MARGIN_I32;
+        let screen_width = SCREEN_WIDTH_I32;
+        let screen_heigth = SCREEN_HEIGHT_I32;
 
         match origin {
             CARDINAL::WEST => {
@@ -65,8 +68,15 @@ impl Model {
                     Destination::AHEAD => y = TOP_LEFT.y + car_width * 4 + margin * 9,
                     Destination::LEFT => y = TOP_LEFT.y + car_width * 5 + margin * 11,
                 }
+
                 center_x = x + car_length / 2;
                 center_y = y + car_width / 2;
+
+                // println!();
+                // println!("TOP_LEFT.y ${}", TOP_LEFT.y);
+                // println!("car_width ${}", car_width);
+                // println!("margin ${}", margin);
+                // println!("center_y ${}", center_y);
             }
 
             CARDINAL::NORTH => {
@@ -130,6 +140,8 @@ impl Model {
                 self.statistics.min_velocity = Some(speed);
             }
         }
+
+        //println!("spawned center_y: ${center_y}");
     }
 
     fn is_car_spam(&mut self, origin: &CARDINAL, destination: &Destination) -> bool {
@@ -176,7 +188,243 @@ impl Model {
         Some(CAR_MAX_SPEED)
     }
 
-    pub fn update_model(&mut self) {}
+    pub fn update_model(&mut self) {
+        self.counter += 1;
+
+        for car in &mut self.cars {
+            if car.origin == CARDINAL::WEST {
+                //from west turn left
+                if car.destination == Destination::LEFT && car.rotation <= -90.0 {
+                    car.rotation = -90.0;
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::SOUTH;
+                    continue;
+                }
+                if car.destination == Destination::LEFT && car.center.x >= TOP_LEFT_F32.x {
+                    let w = 180.0 * car.speed / (SMALL_RADIUS_F32 * PI);
+                    car.rotation -= w;
+                    let a = 180.0 + car.rotation;
+
+                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = TOP_LEFT_F32.x + dx;
+
+                    let dy = -(SMALL_RADIUS_F32) * (a * PI / 180.0).cos();
+                    car.center.y = TOP_LEFT_F32.y + dy;
+
+                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+
+                //from west turn right
+                if car.destination == Destination::RIGHT && car.rotation >= 90.0 {
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::NORTH;
+                    car.rotation = 90.0;
+                    continue;
+                }
+                if car.destination == Destination::RIGHT && car.center.x >= TOP_LEFT_F32.x {
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS_F32);
+                    car.rotation += w;
+                    let a = car.rotation;
+
+                    let dx = ((a * PI / 180.0).sin()) * BIG_RADIUS_F32;
+                    car.center.x = TOP_LEFT_F32.x + dx;
+
+                    let dy = -((a * PI / 180.0).cos()) * BIG_RADIUS_F32;
+                    car.center.y = BOTTOM_RIGHT_F32.y + dy;
+
+                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+            }
+
+            if car.origin == CARDINAL::EAST {
+                //from east turn left
+                //180.0 -> 90.0
+                if car.destination == Destination::LEFT && car.rotation <= 90.0 {
+                    car.rotation = 90.0;
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::NORTH;
+                    continue;
+                }
+
+                if car.destination == Destination::LEFT && car.center.x <= BOTTOM_RIGHT_F32.x {
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    car.rotation -= w;
+                    let a = car.rotation;
+
+                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = BOTTOM_RIGHT_F32.x - dx;
+
+                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = BOTTOM_RIGHT_F32.y + dy;
+
+                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+
+                //from east turn right
+                if car.destination == Destination::RIGHT
+                    && car.rotation >= 270.0
+                    && car.rotation != -90.0
+                {
+                    car.rotation = -90.0;
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::SOUTH;
+                    continue;
+                }
+
+                //180.0 -> -90.0
+                //180.0 -> 270.0
+                if car.destination == Destination::RIGHT && car.center.x <= BOTTOM_RIGHT_F32.x {
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS);
+                    car.rotation += w;
+                    let a = car.rotation;
+
+                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = BOTTOM_RIGHT_F32.x + dx;
+
+                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = TOP_LEFT_F32.y - dy;
+
+                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+            }
+
+            if car.origin == CARDINAL::NORTH {
+                //from north turning left
+                //LEFT 90.0 -> 0.0
+                if car.destination == Destination::LEFT && car.rotation <= 0.0 {
+                    car.rotation = 0.0;
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::WEST;
+                    continue;
+                }
+
+                if car.destination == Destination::LEFT && car.center.y >= TOP_LEFT_F32.y {
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    car.rotation -= w;
+                    let a = car.rotation;
+
+                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = BOTTOM_RIGHT_F32.x - dx;
+
+                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = TOP_LEFT_F32.y + dy;
+
+                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+
+                //from north turn right
+                //RIGHT:  90.0 -> 180.0
+                if car.destination == Destination::RIGHT && car.rotation >= 180.0 {
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::EAST;
+                    car.rotation = 180.0;
+                    continue;
+                }
+
+                if car.destination == Destination::RIGHT && car.center.y >= TOP_LEFT_F32.y {
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS);
+                    car.rotation += w;
+                    let a = car.rotation;
+
+                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = TOP_LEFT_F32.x + dx;
+
+                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = TOP_LEFT_F32.y - dy;
+
+                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+            }
+
+            if car.origin == CARDINAL::SOUTH {
+                //from south to left
+                //      -90.0 -> -180.0
+                if car.destination == Destination::LEFT
+                    && car.rotation <= -180.0
+                    && car.rotation != 180.0
+                {
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::EAST;
+                    car.rotation = 180.0;
+                    continue;
+                }
+
+                if car.destination == Destination::LEFT && car.center.y <= BOTTOM_RIGHT_F32.y {
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    car.rotation -= w;
+                    let a = car.rotation;
+
+                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = TOP_LEFT_F32.x - dx;
+
+                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = BOTTOM_RIGHT_F32.y + dy;
+
+                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+
+                //from south to right
+                //RIGHT -90.0 -> 0.0
+                if car.destination == Destination::RIGHT && car.rotation >= 0.0 {
+                    car.destination = Destination::AHEAD;
+                    car.origin = CARDINAL::WEST;
+                    car.rotation = 0.0;
+                    continue;
+                }
+
+                if car.destination == Destination::RIGHT && car.center.y <= BOTTOM_RIGHT_F32.y {
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS_F32);
+                    car.rotation += w;
+                    let a = car.rotation;
+
+                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    car.center.x = BOTTOM_RIGHT_F32.x + dx;
+
+                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    car.center.y = BOTTOM_RIGHT_F32.y - dy;
+
+                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                }
+            }
+        }
+
+        // move car
+        for car in &mut self.cars {
+            if car.origin == CARDINAL::WEST && car.rotation == 0.0 {
+                car.position.x += car.speed;
+                car.center.x += car.speed;
+                car.odo += car.speed;
+            }
+            if car.origin == CARDINAL::EAST && car.rotation == 180.0 {
+                car.position.x -= car.speed;
+                car.center.x -= car.speed;
+                car.odo += car.speed;
+            }
+            if car.origin == CARDINAL::NORTH && car.rotation == 90.0 {
+                car.position.y += car.speed;
+                car.center.y += car.speed;
+                car.odo += car.speed;
+            }
+            if car.origin == CARDINAL::SOUTH && car.rotation == -90.0 {
+                car.position.y -= car.speed;
+                car.center.y -= car.speed;
+                car.odo += car.speed;
+            }
+        }
+
+        //Remove cars that are no longer visible
+        let mut filtered = vec![];
+        for (_, car) in self.cars.clone().iter().enumerate() {
+            if !(car.center.x as i32 + CAR_LENGTH_I32 * 2 < 0
+                || car.center.x as i32 > SCREEN_WIDTH_I32 + CAR_LENGTH_I32 * 2
+                || car.center.y as i32 + CAR_LENGTH_I32 * 2 < 0
+                || car.center.y as i32 > SCREEN_HEIGHT_I32 + CAR_LENGTH_I32 * 2)
+            {
+                filtered.push(car.clone());
+            }
+        }
+        self.cars = filtered;
+    }
 
     fn build_lines() -> Vec<Line> {
         let color = (200, 200, 200);
@@ -264,7 +512,7 @@ impl Model {
                 }
             } else {
                 let mut x = end.x;
-                while x <= SCREEN_WIDTH as i32 {
+                while x <= SCREEN_WIDTH_I32 {
                     let line = Line::new(
                         Point::new(x, end.y),
                         Point::new(x + LINE_LENGHT, start.y),
@@ -289,7 +537,7 @@ impl Model {
                 }
             } else {
                 let mut y = end.y;
-                while y <= SCREEN_HEIGHT as i32 {
+                while y <= SCREEN_HEIGHT_I32 {
                     let line = Line::new(
                         Point::new(end.x, y),
                         Point::new(start.x, y + LINE_LENGHT),
