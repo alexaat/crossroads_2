@@ -1,14 +1,10 @@
 use crate::preferences::*;
 use std::time::Instant;
 
-
 pub struct Model {
     pub lines: Vec<Line>,
     pub cars: Vec<Car>,
     pub statistics: Statisics,
-    // pub top_left: Point,
-    // pub bottom_right: Point,
-
 }
 impl Model {
     pub fn new() -> Self {
@@ -16,14 +12,6 @@ impl Model {
             lines: Self::build_lines(),
             cars: vec![],
             statistics: Statisics::new(),
-            // top_left: Point::new(
-            //     (SCREEN_WIDTH as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            //     (SCREEN_HEIGHT as i32 - 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            // ),
-            // bottom_right: Point::new(
-            //     (SCREEN_WIDTH as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            //     (SCREEN_HEIGHT as i32 + 6 * (CAR_WIDTH as i32 + 2 * MARGIN as i32)) / 2,
-            // ),
         }
     }
 
@@ -153,7 +141,8 @@ impl Model {
                     }
                 }
                 if car.origin == CARDINAL::EAST {
-                    if car.position.x > SCREEN_WIDTH_F32 - CAR_LENGTH_F32 - SEPARATION_DISTANCE_F32 {
+                    if car.position.x > SCREEN_WIDTH_F32 - CAR_LENGTH_F32 - SEPARATION_DISTANCE_F32
+                    {
                         return true;
                     }
                 }
@@ -163,7 +152,8 @@ impl Model {
                     }
                 }
                 if car.origin == CARDINAL::SOUTH {
-                    if car.position.y > SCREEN_HEIGHT_F32 - CAR_LENGTH_F32 - SEPARATION_DISTANCE_F32 {
+                    if car.position.y > SCREEN_HEIGHT_F32 - CAR_LENGTH_F32 - SEPARATION_DISTANCE_F32
+                    {
                         return true;
                     }
                 }
@@ -182,7 +172,7 @@ impl Model {
         return id;
     }
 
-    fn calculate_speed(&mut self, car: &mut Car) -> Option<f32>{
+    fn calculate_speed(&mut self, car: &mut Car) -> Option<f32> {
         Some(CAR_MAX_SPEED)
     }
 
@@ -398,7 +388,6 @@ impl Car {
             vehicle_type,
         }
     }
-
 }
 
 #[derive(Debug, Clone)]
@@ -418,7 +407,7 @@ pub struct Statisics {
     pub max_velocity: Option<f32>,
     pub min_velocity: Option<f32>,
     pub max_time: Option<u128>,
-    pub min_time: Option<u128>
+    pub min_time: Option<u128>,
 }
 impl Statisics {
     pub fn new() -> Self {
@@ -427,9 +416,7 @@ impl Statisics {
             max_velocity: None,
             min_velocity: None,
             max_time: None,
-            min_time: None
+            min_time: None,
         }
     }
 }
-
-

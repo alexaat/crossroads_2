@@ -5,6 +5,7 @@ use std::time::Duration;
 mod model;
 use crate::model::Model;
 mod view;
+use crate::preferences::FONT_URL;
 use crate::preferences::TOP_LEFT_URL;
 use crate::view::View;
 mod controller;
@@ -12,10 +13,11 @@ use crate::controller::Controller;
 mod preferences;
 use crate::preferences::SCREEN_HEIGHT;
 use crate::preferences::SCREEN_WIDTH;
+use crate::view::{FontManager, TextureManager};
 use sdl2::render::Texture;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
-use crate::view::TextureManager;
+mod ui;
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();
@@ -31,12 +33,16 @@ fn main() {
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
-
     let texture_creator = canvas.texture_creator();
     let mut texture_manager = TextureManager::new();
     texture_manager.add("top_left", TOP_LEFT_URL, &texture_creator);
 
-    let view = View::new(canvas, (0, 0, 0), &texture_manager);
+    let ttf_context = sdl2::ttf::init().unwrap();
+    let mut font_manager = FontManager::new();
+    font_manager.add("title", FONT_URL, 32, &ttf_context);
+    font_manager.add("body", FONT_URL, 20, &ttf_context);
+
+    let view = View::new(canvas, (0, 0, 0), &texture_manager, &font_manager);
     let model = Model::new();
     let mut controller = Controller::new(model, view);
 
@@ -61,5 +67,3 @@ fn main() {
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
-
-
