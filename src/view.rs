@@ -137,12 +137,12 @@ impl<'a> View<'a> {
         }
         //Draw road markings
         for line in &model.lines {
-            line.draw(&mut self.canvas);
+            line.draw(&mut self.canvas, None);
         }
 
         //Draw cars
         for car in &model.cars {
-            car.draw(&mut self.canvas);
+            car.draw(&mut self.canvas, Some(&self.texture_manager));
         }
 
         self.canvas.present();
@@ -243,7 +243,7 @@ impl<'a> View<'a> {
 }
 
 impl Drawable for Line {
-    fn draw(&self, canvas: &mut Canvas<Window>) {
+    fn draw(&self, canvas: &mut Canvas<Window>, texture_manager: Option<&TextureManager>) {
         let (r, g, b) = self.color;
         canvas.set_draw_color(Color::RGB(r, g, b));
         let start = Point::new(self.start.x, self.start.y);
@@ -253,10 +253,15 @@ impl Drawable for Line {
 }
 
 impl Drawable for Car {
-    fn draw(&self, canvas: &mut Canvas<Window>) {
+    fn draw(&self, canvas: &mut Canvas<Window>, texture_manager: Option<&TextureManager>) {
         let (r, g, b) = (255, 0, 0);
 
         canvas.set_draw_color(Color::RGB(r, g, b));
+
+        match texture_manager {
+            Some(texture_manager) => {}
+            None => {}
+        }
 
         let texture_creator = canvas.texture_creator();
         let url = match self.vehicle_type {
@@ -284,16 +289,16 @@ impl Drawable for Car {
             )
             .unwrap();
 
-        match self.destination {
-            Destination::LEFT => canvas.set_draw_color(Color::RGB(0, 0, 255)),
-            Destination::AHEAD => canvas.set_draw_color(Color::RGB(0, 255, 0)),
-            Destination::RIGHT => canvas.set_draw_color(Color::RGB(255, 0, 0)),
-        };
+        // match self.destination {
+        //     Destination::LEFT => canvas.set_draw_color(Color::RGB(0, 0, 255)),
+        //     Destination::AHEAD => canvas.set_draw_color(Color::RGB(0, 255, 0)),
+        //     Destination::RIGHT => canvas.set_draw_color(Color::RGB(255, 0, 0)),
+        // };
     }
 }
 
 trait Drawable {
-    fn draw(&self, canvas: &mut Canvas<Window>);
+    fn draw(&self, canvas: &mut Canvas<Window>, texture_manager: Option<&TextureManager>);
 }
 
 pub struct TextureManager<'a> {

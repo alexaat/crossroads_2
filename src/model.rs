@@ -71,12 +71,6 @@ impl Model {
 
                 center_x = x + car_length / 2;
                 center_y = y + car_width / 2;
-
-                // println!();
-                // println!("TOP_LEFT.y ${}", TOP_LEFT.y);
-                // println!("car_width ${}", car_width);
-                // println!("margin ${}", margin);
-                // println!("center_y ${}", center_y);
             }
 
             CARDINAL::NORTH => {
