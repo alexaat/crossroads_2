@@ -33,6 +33,9 @@ fn main() {
     let texture_creator = canvas.texture_creator();
     let mut texture_manager = TextureManager::new();
     texture_manager.add("top_left", TOP_LEFT_URL, &texture_creator);
+    texture_manager.add("blue_car", CAR_URLS[0], &texture_creator);
+    texture_manager.add("red_car", CAR_URLS[1], &texture_creator);
+    texture_manager.add("green_car", CAR_URLS[2], &texture_creator);
 
     let ttf_context = sdl2::ttf::init().unwrap();
     let mut font_manager = FontManager::new();

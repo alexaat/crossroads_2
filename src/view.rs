@@ -1,6 +1,5 @@
 use super::*;
 use crate::model::Car;
-use crate::model::Destination;
 use crate::model::Line;
 use crate::model::VehicleType;
 use crate::preferences::*;
@@ -142,13 +141,14 @@ impl<'a> View<'a> {
 
         //Draw cars
         for car in &model.cars {
-            car.draw(&mut self.canvas, Some(&self.texture_manager));
+            car.draw(&mut self.canvas, Some(&self.texture_manager));      
         }
 
         self.canvas.present();
     }
 
     pub fn draw_statistics(&mut self, model: &Model) {
+            
         self.canvas.set_draw_color(Color::RGB(10, 10, 10));
         let _ = self.canvas.fill_rect(Rect::new(145, 195, 400, 300));
 
@@ -243,7 +243,7 @@ impl<'a> View<'a> {
 }
 
 impl Drawable for Line {
-    fn draw(&self, canvas: &mut Canvas<Window>, texture_manager: Option<&TextureManager>) {
+    fn draw(&self, canvas: &mut Canvas<Window>, _: Option<&TextureManager>) {
         let (r, g, b) = self.color;
         canvas.set_draw_color(Color::RGB(r, g, b));
         let start = Point::new(self.start.x, self.start.y);
@@ -254,46 +254,75 @@ impl Drawable for Line {
 
 impl Drawable for Car {
     fn draw(&self, canvas: &mut Canvas<Window>, texture_manager: Option<&TextureManager>) {
-        let (r, g, b) = (255, 0, 0);
-
-        canvas.set_draw_color(Color::RGB(r, g, b));
-
-        match texture_manager {
-            Some(texture_manager) => {}
-            None => {}
-        }
-
-        let texture_creator = canvas.texture_creator();
-        let url = match self.vehicle_type {
-            VehicleType::BlueCar => CAR_URLS[0],
-            VehicleType::GreenCar => CAR_URLS[2],
-            VehicleType::RedCar => CAR_URLS[1],
-        };
-        let texture = texture_creator.load_texture(url).unwrap();
-        let src = Rect::new(0, 0, CAR_LENGTH_DEFAULT, CAR_WIDTH_DEFAULT);
 
         let x = self.center.x as i32 - CAR_LENGTH_I32 / 2;
         let y = self.center.y as i32 - CAR_WIDTH_I32 / 2;
-        let dst = Rect::new(x, y, CAR_LENGTH, CAR_WIDTH);
-        let center = Point::new(CAR_LENGTH_I32 / 2, CAR_WIDTH_I32 / 2);
 
-        canvas
-            .copy_ex(
-                &texture,
-                src,
-                dst,
-                self.rotation as f64,
-                center,
-                false,
-                false,
-            )
-            .unwrap();
+        match texture_manager {
+            Some(texture_manager) => {
+                let texture_option = match self.vehicle_type {
+                    VehicleType::BlueCar => (texture_manager.textures.get("blue_car"), (0,0,255_u8)),
+                    VehicleType::GreenCar => (texture_manager.textures.get("green_car"), (0,255_u8, 0)),
+                    VehicleType::RedCar => (texture_manager.textures.get("red_car"),(255_u8, 0, 0))
+                };
+                match texture_option.0 {
+                    Some(texture) => {
+                        let src = Rect::new(0, 0, CAR_LENGTH_DEFAULT, CAR_WIDTH_DEFAULT);
+                        let dst = Rect::new(x, y, CAR_LENGTH, CAR_WIDTH);
+                        let center = Point::new(CAR_LENGTH_I32 / 2, CAR_WIDTH_I32 / 2);
+                        if let Err (e) = canvas
+                            .copy_ex(
+                                &texture,
+                                src,
+                                dst,
+                                self.rotation as f64,
+                                center,
+                                false,
+                                false,
+                            ){
+                                println!("could not copy texture: {e}"); 
+                                canvas.set_draw_color(Color::RGB(texture_option.1.0, texture_option.1.1, texture_option.1.2));
+                                let (w, l) = match self.rotation {
+                                    0.0 | 180.0 => (CAR_LENGTH, CAR_WIDTH),                           
+                                    _ => (CAR_WIDTH, CAR_LENGTH)
+                                };
+                                if let Err(e) = canvas.fill_rect(Rect::new(x + MARGIN_I32,y,w,l)){
+                                    println!("could not draw rect: {e}");
+                                }
+                            }                       
 
-        // match self.destination {
-        //     Destination::LEFT => canvas.set_draw_color(Color::RGB(0, 0, 255)),
-        //     Destination::AHEAD => canvas.set_draw_color(Color::RGB(0, 255, 0)),
-        //     Destination::RIGHT => canvas.set_draw_color(Color::RGB(255, 0, 0)),
-        // };
+                    },
+                    None => {
+                        canvas.set_draw_color(Color::RGB(texture_option.1.0, texture_option.1.1, texture_option.1.2));
+                        let (w, l) = match self.rotation {
+                            0.0 | 180.0 => (CAR_LENGTH, CAR_WIDTH),                           
+                            _ => (CAR_WIDTH, CAR_LENGTH)
+                        };
+
+                        if let Err(e) = canvas.fill_rect(Rect::new(x + MARGIN_I32,y,w,l)){
+                            println!("could not draw rect: {e}");
+                        } 
+                    }
+                }
+            }
+            None => {
+                //if texture manager is not supplied, use rectangles
+                let (r,g,b) = match  self.vehicle_type{
+                    VehicleType::BlueCar => (0_u8,0,255),
+                    VehicleType::GreenCar => (0,255_u8,0),
+                    VehicleType::RedCar => (255,0,0_u8)
+                };
+                canvas.set_draw_color(Color::RGB(r, g, b));
+                let (w, l) = match self.rotation {
+                    0.0 | 180.0 => (CAR_LENGTH, CAR_WIDTH),                 
+                    _ => (CAR_WIDTH, CAR_LENGTH)
+                };
+
+                if let Err(e) = canvas.fill_rect(Rect::new(x + MARGIN_I32,y,w,l)){
+                    println!("could not draw rect: {e}");
+                } 
+            }
+        }
     }
 }
 
