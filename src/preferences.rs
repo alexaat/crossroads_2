@@ -18,10 +18,12 @@ pub static CAR_LENGTH: u32 = ((CAR_LENGTH_DEFAULT as f32) * SCALE) as u32;
 pub static CAR_LENGTH_I32: i32 = CAR_LENGTH as i32;
 pub static CAR_WIDTH_I32: i32 = CAR_WIDTH as i32;
 pub static CAR_LENGTH_F32: f32 = CAR_LENGTH as f32;
+pub static CAR_WIDTH_F32: f32 = CAR_WIDTH as f32;
 
 pub static MARGIN_DEFAULT: u32 = 4;
 pub static MARGIN: u32 = ((MARGIN_DEFAULT as f32) * SCALE) as u32;
 pub static MARGIN_I32: i32 = MARGIN as i32;
+pub static MARGIN_F32: f32 = MARGIN as f32;
 
 pub const LINE_LENGHT: i32 = 40;
 pub const LINE_GAP: i32 = 25;
@@ -64,6 +66,9 @@ pub static CAR_URLS: [&str; 3] = [
     "assets/images/red_car_20.png",
     "assets/images/green_car_20.png",
 ];
+
+pub static MIN_TIME: f32 = 50.0;
+pub static SPACE_GAP: f32 = 20.0;
 
 /*
 

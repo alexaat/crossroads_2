@@ -15,6 +15,8 @@ use sdl2::render::Texture;
 use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 mod ui;
+mod math;
+
 
 fn main() {
     let sdl_context = sdl2::init().unwrap();

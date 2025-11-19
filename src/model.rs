@@ -1,6 +1,7 @@
 use crate::preferences::*;
 use std::f32::consts::PI;
 use std::time::Instant;
+use crate::math::*;
 
 pub struct Model {
     pub counter: u64,
@@ -179,7 +180,1419 @@ impl Model {
     }
 
     fn calculate_speed(&mut self, car: &mut Car) -> Option<f32> {
-        Some(CAR_MAX_SPEED)
+        let w = CAR_WIDTH_F32;
+        let m = MARGIN_F32;
+        let l = CAR_LENGTH_F32;
+        let s_w = SCREEN_WIDTH_F32;
+        let s_h = SCREEN_HEIGHT_F32;
+        let mut car_in_front: Option<Car> = None;
+        let mut speed_intervals: Vec<Interval> = vec![];
+        //
+        //from WEST
+        if car.origin == CARDINAL::WEST {
+            let dist = TOP_LEFT_F32.x + CAR_LENGTH_F32 * 0.5;
+            //
+            //from WEST LEFT
+            if car.destination == Destination::LEFT {
+                return Some(dist / (MIN_TIME * 2.0));
+            }
+            //from WEST AHEAD
+            if car.destination == Destination::AHEAD {
+                for c in self.cars.clone() {
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //
+                        //from NORTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.y + w + 2.0 * m - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.y + 2.0 * w + 4.0 * m + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + 4.0 * w + 8.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 5.0 * w + 10.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from NORTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.y + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.y + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_straight - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_straight + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = s_w - BOTTOM_RIGHT_F32.x + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = BOTTOM_RIGHT_F32.x
+                                - calc.bigger_straight
+                                - 0.5 * l
+                                - SPACE_GAP
+                                - car.odo;
+                            let dd = BOTTOM_RIGHT_F32.x - calc.smaller_straight
+                                + 0.5 * l
+                                + SPACE_GAP
+                                - car.odo;
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y + 4.0 * w + 8.0 * m
+                                - 0.5 * l
+                                - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                s_h - BOTTOM_RIGHT_F32.y + 5.0 * w + 10.0 * m + 0.5 * l
+                                    - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + w + 2.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 2.0 * w + 4.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //same origin (from WEST)
+                    if c.origin == CARDINAL::WEST
+                        && c.destination == Destination::AHEAD
+                        && c.center.x < BOTTOM_RIGHT_F32.x
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.x > c.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.x > car.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //from WEST RIGHT
+            if car.destination == Destination::RIGHT {
+                for c in self.cars.clone() {
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //from NORTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.y + calc.arc_two - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                TOP_LEFT_F32.y + 0.5 * PI * BIG_RADIUS + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.arc_one + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let arc_calc = get_arc_len_with_straigh_path_one();
+                            let d1 = s_w
+                                - TOP_LEFT_F32.x
+                                - arc_calc.bigger_straight
+                                - 0.5 * l
+                                - c.odo;
+                            let d2 = s_w - TOP_LEFT_F32.x - arc_calc.smaller_straight
+                                + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            // main car
+                            let d = dist + arc_calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + arc_calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let arc_calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y + arc_calc.smaller_straight
+                                - 0.5 * l
+                                - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - BOTTOM_RIGHT_F32.y
+                                + arc_calc.bigger_straight
+                                + 0.5 * l
+                                - c.odo;
+
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + arc_calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + arc_calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from SOUTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let arc_calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - BOTTOM_RIGHT_F32.y + arc_calc.arc_one - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + arc_calc.arc_two - SPACE_GAP - car.odo;
+                            let dd = dist + 0.5 * PI * BIG_RADIUS + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //same origin (from WEST)
+                    if c.origin == CARDINAL::WEST && c.destination == Destination::RIGHT {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.x > c.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.x > car.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //adjust for car in front
+            let mut max_speed: Option<f32> = None;
+            if let Some(ref c_front) = car_in_front {
+                //time for car in front to get to safe area
+                let d = BOTTOM_RIGHT_F32.x - c_front.center.x;
+                let t_front = d / c_front.speed;
+
+                //speed that is needed to reach car in front
+                let dd = c_front.center.x
+                    - car.center.x
+                    - SEPARATION_DISTANCE as f32
+                    - CAR_LENGTH_F32;
+                let v0 = dd / t_front;
+                let v = v0 + c_front.speed;
+                max_speed = Some(v);
+            }
+            //calculate speed based on time windows
+            return get_speed_loop(dist, speed_intervals, max_speed);
+        }
+        //
+        //from EAST
+        if car.origin == CARDINAL::EAST {
+            let dist = s_w - BOTTOM_RIGHT_F32.x + CAR_LENGTH_F32 * 0.5;
+            //
+            //from EAST LEFT
+            if car.destination == Destination::LEFT {
+                return Some(dist / (MIN_TIME * 2.0));
+            }
+            //
+            //from EAST AHEAD
+            if car.destination == Destination::AHEAD {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //from WEST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc_one = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x + calc_one.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.x + calc_one.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = s_w
+                                - TOP_LEFT_F32.x
+                                - calc_one.bigger_straight
+                                - 0.5 * l
+                                - SPACE_GAP
+                                - car.odo;
+                            let dd = s_w - TOP_LEFT_F32.x - calc_one.smaller_straight
+                                + 0.5 * l
+                                + SPACE_GAP
+                                - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //
+                        //from NORTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 =
+                                BOTTOM_RIGHT_F32.y - 2.0 * w - 4.0 * m - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = BOTTOM_RIGHT_F32.y - w - 2.0 * m + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + w + 2.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 3.0 * w + 6.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 =
+                                s_h - BOTTOM_RIGHT_F32.y + w + 2.0 * m - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - BOTTOM_RIGHT_F32.y + 2.0 * w + 4.0 * m + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + 4.0 * w + 8.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 5.0 * w + 10.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from SOUTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - BOTTOM_RIGHT_F32.y + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_straight - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_straight + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //(same origin) form EAST
+                    if c.origin == CARDINAL::EAST
+                        && c.destination == Destination::AHEAD
+                        && c.center.x > TOP_LEFT_F32.x
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.x < c.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.x < car.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //from EAST RIGHT
+            if car.destination == Destination::RIGHT {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //from WEST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 =
+                                BOTTOM_RIGHT_F32.x - calc.bigger_straight - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = BOTTOM_RIGHT_F32.x - calc.smaller_straight + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //
+                        //from NORTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 =
+                                TOP_LEFT_F32.y + calc.smaller_straight - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                TOP_LEFT_F32.y + calc.bigger_straight + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from NORTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.y - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.y + calc.arc_one - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.arc_two - SPACE_GAP - car.odo;
+                            let dd = dist + 0.5 * PI * BIG_RADIUS + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y + calc.arc_two - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                s_h - BOTTOM_RIGHT_F32.y + 0.5 * PI * BIG_RADIUS + 0.5 * l
+                                    - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.arc_one + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //same origin (from EAST)
+                    if c.origin == CARDINAL::EAST
+                        && c.destination == Destination::RIGHT
+                        && c.center.x > (TOP_LEFT_F32.x + 2.5 * w + 5.0 * m)
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.x < c.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.x < car.center.x {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //adjust for car in front
+            let mut max_speed: Option<f32> = None;
+            if let Some(ref c_front) = car_in_front {
+                //time for car in front to get to safe area
+                let d = c_front.center.x - TOP_LEFT_F32.x;
+                let t_front = d / c_front.speed;
+
+                //speed that is needed to reach car in front
+                let dd = car.center.x
+                    - c_front.center.x
+                    - SEPARATION_DISTANCE as f32
+                    - CAR_LENGTH_F32;
+                let v0 = dd / t_front;
+                let v = v0 + c_front.speed;
+                max_speed = Some(v);
+            }
+            //calculate speed based on time windows
+            return get_speed_loop(dist, speed_intervals, max_speed);
+        }
+        //
+        //from NORTH
+        if car.origin == CARDINAL::NORTH {
+            let dist = TOP_LEFT_F32.y + CAR_LENGTH_F32 * 0.5;
+            //
+            //from NORTH LEFT
+            if car.destination == Destination::LEFT {
+                return Some(dist / (MIN_TIME * 2.0));
+            }
+            //
+            //from NORTH AHEAD
+            if car.destination == Destination::AHEAD {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //from WEST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x + 4.0 * w + 8.0 * m - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = BOTTOM_RIGHT_F32.x - w - 2.0 * m + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + w + 2.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 2.0 * w + 4.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let d1 =
+                                s_w - BOTTOM_RIGHT_F32.x + w + 2.0 * m - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = s_w - BOTTOM_RIGHT_F32.x + 2.0 * w + 4.0 * m + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + 4.0 * w + 8.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 5.0 * w + 10.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from EAST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = s_w - BOTTOM_RIGHT_F32.x + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_straight - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_straight + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 = s_h - BOTTOM_RIGHT_F32.y + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - BOTTOM_RIGHT_F32.y + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = BOTTOM_RIGHT_F32.y
+                                - calc.bigger_straight
+                                - 0.5 * l
+                                - SPACE_GAP
+                                - car.odo;
+                            let dd = BOTTOM_RIGHT_F32.y - calc.smaller_straight
+                                + 0.5 * l
+                                + SPACE_GAP
+                                - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //same origin (from NORTH)
+                    if c.origin == CARDINAL::NORTH
+                        && c.destination == Destination::AHEAD
+                        && c.center.y < BOTTOM_RIGHT_F32.y
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.y > c.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.y > car.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //from NORTH RIGHT
+            if car.destination == Destination::RIGHT {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //
+                        //from WEST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 =
+                                TOP_LEFT_F32.x + calc.smaller_straight - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                TOP_LEFT_F32.x + calc.bigger_straight + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from WEST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.x + calc.arc_one - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.arc_two - SPACE_GAP - car.odo;
+                            let dd = dist + 0.5 * PI * BIG_RADIUS + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x + calc.arc_two - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                s_w - BOTTOM_RIGHT_F32.x + 0.5 * PI * BIG_RADIUS + 0.5 * l
+                                    - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.arc_one + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from SOUTH
+                    if c.origin == CARDINAL::SOUTH && c.center.y > TOP_LEFT_F32.y {
+                        //
+                        //from SOUTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 = s_h
+                                - TOP_LEFT_F32.y
+                                - calc.bigger_straight
+                                - 0.5 * l
+                                - c.odo;
+                            //exit danger zone
+                            let d2 = s_h - TOP_LEFT_F32.y - calc.smaller_straight + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //same origin (from NORTH)
+                    if c.origin == CARDINAL::NORTH
+                        && c.destination == Destination::RIGHT
+                        && c.center.y < (TOP_LEFT_F32.y + 3.5 * w + 7.0 * m)
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.y > c.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.y > car.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //adjust for car in front
+            let mut max_speed: Option<f32> = None;
+            if let Some(ref c_front) = car_in_front {
+                //time for car in front to get to safe area
+                let d = BOTTOM_RIGHT_F32.y - c_front.center.y;
+                let t_front = d / c_front.speed;
+
+                //speed that is needed to reach car in front
+                let dd = c_front.center.y
+                    - car.center.y
+                    - SEPARATION_DISTANCE as f32
+                    - CAR_LENGTH_F32;
+                let v0 = dd / t_front;
+                let v = v0 + c_front.speed;
+                max_speed = Some(v);
+            }
+
+            //calculate speed based on time windows
+            return get_speed_loop(dist, speed_intervals, max_speed);
+        }
+        //
+        //from SOUTH
+        if car.origin == CARDINAL::SOUTH {
+            let dist = s_h - BOTTOM_RIGHT_F32.y + CAR_LENGTH_F32 * 0.5;
+            //
+            //from SOUTH LEFT
+            if car.destination == Destination::LEFT {
+                return Some(dist / (MIN_TIME * 2.0));
+            }
+            //
+            //from SOUTH AHEAD
+            if car.destination == Destination::AHEAD {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //
+                        //from WEST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x + w + 2.0 * m - 0.5 * l - c.odo;
+
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.x + 2.0 * w + 4.0 * m + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + 3.0 * w + 6.0 * m + 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 5.0 * w + 10.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from WEST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.x + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_straight - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_straight + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //
+                        //from NORTH RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.y + calc.smaller_arc - c.odo;
+                            //exit danger zone
+                            let d2 = TOP_LEFT_F32.y + calc.bigger_arc - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = s_h
+                                - TOP_LEFT_F32.y
+                                - calc.bigger_straight
+                                - 0.5 * l
+                                - SPACE_GAP
+                                - car.odo;
+                            let dd = s_h - TOP_LEFT_F32.y - calc.smaller_straight
+                                + 0.5 * l
+                                + SPACE_GAP
+                                - car.odo;
+
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x + 4.0 * w + 8.0 * m
+                                - 0.5 * l
+                                - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                s_w - BOTTOM_RIGHT_F32.x + 5.0 * w + 10.0 * m + 0.5 * l
+                                    - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + w + 2.0 * m - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + 2.0 * w + 4.0 * m + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //same origin (FROM SOUTH)
+                    if c.origin == CARDINAL::SOUTH
+                        && c.destination == Destination::AHEAD
+                        && c.center.y > TOP_LEFT_F32.y
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.y < c.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.y < car.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //from SOUTH RIGHT
+            if car.destination == Destination::RIGHT {
+                for c in self.cars.clone() {
+                    //
+                    //from WEST
+                    if c.origin == CARDINAL::WEST && c.center.x < BOTTOM_RIGHT_F32.x {
+                        //
+                        //from WEST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = TOP_LEFT_F32.x + calc.arc_two - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                TOP_LEFT_F32.x + 0.5 * PI * BIG_RADIUS + 0.5 * l - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist - 0.5 * l - SPACE_GAP - car.odo;
+                            let dd = dist + calc.arc_one + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from NORTH
+                    if c.origin == CARDINAL::NORTH && c.center.y < BOTTOM_RIGHT_F32.y {
+                        //
+                        //from NORTH AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_one();
+                            //enter danger zone
+                            let d1 =
+                                BOTTOM_RIGHT_F32.y - calc.bigger_straight - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = BOTTOM_RIGHT_F32.y - calc.smaller_straight + 0.5 * l
+                                - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //
+                    //from EAST
+                    if c.origin == CARDINAL::EAST && c.center.x > TOP_LEFT_F32.x {
+                        //
+                        //from EAST AHEAD
+                        if c.destination == Destination::AHEAD {
+                            let calc = get_arc_len_with_straigh_path_two();
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x + calc.smaller_straight
+                                - 0.5 * l
+                                - c.odo;
+                            //exit danger zone
+                            let d2 =
+                                s_w - BOTTOM_RIGHT_F32.x + calc.bigger_straight + 0.5 * l
+                                    - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.smaller_arc - SPACE_GAP - car.odo;
+                            let dd = dist + calc.bigger_arc + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                        //
+                        //from EAST RIGHT
+                        if c.destination == Destination::RIGHT {
+                            let calc = get_arc_len_with_straigh_path_three();
+                            //enter danger zone
+                            let d1 = s_w - BOTTOM_RIGHT_F32.x - 0.5 * l - c.odo;
+                            //exit danger zone
+                            let d2 = s_w - BOTTOM_RIGHT_F32.x + calc.arc_one - c.odo;
+                            //out of danger zone
+                            if d2 < 0.0 {
+                                continue;
+                            }
+                            //time enter and exit danger zone
+                            let t1 = d1 / c.speed;
+                            let t2 = d2 / c.speed;
+                            //main car
+                            let d = dist + calc.arc_two - SPACE_GAP - car.odo;
+                            let dd = dist + 0.5 * PI * BIG_RADIUS + 0.5 * l + SPACE_GAP - car.odo;
+                            //out of danger zone
+                            if dd < 0.0 {
+                                continue;
+                            }
+                            //calculate speed range
+                            let slow_speed = d / t2;
+                            let fast_speed = dd / t1;
+                            //add to speed intervals
+                            let speed_interval = Interval::new(slow_speed, fast_speed);
+                            speed_intervals.push(speed_interval);
+                        }
+                    }
+                    //same origin (from SOUTH)
+                    if c.origin == CARDINAL::SOUTH
+                        && c.destination == Destination::RIGHT
+                        && c.center.y > (dist + 3.5 * w + 7.0 * m)
+                    {
+                        //get car in front
+                        if let Some(ref value) = car_in_front {
+                            if value.center.y < c.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        } else {
+                            if c.center.y < car.center.y {
+                                car_in_front = Some(c.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            //adjust for car in front
+            let mut max_speed: Option<f32> = None;
+            if let Some(ref c_front) = car_in_front {
+                //time for car in front to get to safe area
+                let d = c_front.center.y - TOP_LEFT_F32.y;
+                let t_front = d / c_front.speed;
+
+                //speed that is needed to reach car in front
+                let dd = car.center.y
+                    - c_front.center.y
+                    - SEPARATION_DISTANCE as f32
+                    - CAR_LENGTH_F32;
+                let v0 = dd / t_front;
+                let v = v0 + c_front.speed;
+                max_speed = Some(v);
+            }
+
+            //calculate speed based on time windows
+            return get_speed_loop(dist, speed_intervals, max_speed);
+        }
+
+        return Some((TOP_LEFT_F32.x - CAR_LENGTH_F32 * 0.5) / MIN_TIME);
+    }
+
+    pub fn update_stat_max_min_time(statistics: &mut Statisics, elapsed: u128) {
+        //
+        //max time
+        if let Some(max) = statistics.max_time {
+            if elapsed > max {
+                statistics.max_time = Some(elapsed);
+            }
+        } else {
+            statistics.max_time = Some(elapsed);
+        }
+        //
+        //min time
+        if let Some(min) = statistics.min_time {
+            if elapsed < min {
+                statistics.min_time = Some(elapsed);
+            }
+        } else {
+            statistics.min_time = Some(elapsed);
+        }
     }
 
     pub fn update_model(&mut self) {
@@ -382,6 +1795,36 @@ impl Model {
             }
         }
 
+
+        //Increase speed after junction
+        let car_max_speed = (TOP_LEFT_F32.x + CAR_LENGTH_F32 * 0.5) / (MIN_TIME - 1.0);
+
+        for car in &mut self.cars {
+            if car.speed >= car_max_speed {
+                continue;
+            }
+            if car.origin == CARDINAL::WEST && car.center.x > BOTTOM_RIGHT_F32.x {
+                car.speed = car_max_speed;
+                let elapsed = car.timer.elapsed().as_millis();
+                Self::update_stat_max_min_time(&mut self.statistics, elapsed);
+            }
+            if car.origin == CARDINAL::EAST && car.center.x < TOP_LEFT_F32.x {
+                car.speed = car_max_speed;
+                let elapsed = car.timer.elapsed().as_millis();
+                Self::update_stat_max_min_time(&mut self.statistics, elapsed);
+            }
+            if car.origin == CARDINAL::SOUTH && car.center.y < TOP_LEFT_F32.y {
+                car.speed = car_max_speed;
+                let elapsed = car.timer.elapsed().as_millis();
+                Self::update_stat_max_min_time(&mut self.statistics, elapsed);
+            }
+            if car.origin == CARDINAL::NORTH && car.center.y > BOTTOM_RIGHT_F32.y {
+                car.speed = car_max_speed;
+                let elapsed = car.timer.elapsed().as_millis();
+                Self::update_stat_max_min_time(&mut self.statistics, elapsed);
+            }
+        }
+
         // move car
         for car in &mut self.cars {
             if car.origin == CARDINAL::WEST && car.rotation == 0.0 {
@@ -545,6 +1988,64 @@ impl Model {
     }
 }
 
+pub fn get_speed_loop(
+    dist: f32,
+    speed_intervals: Vec<Interval>,
+    max_speed: Option<f32>,
+) -> Option<f32> {
+    let mut time = MIN_TIME;
+    //
+    //filter speed intervals
+    let mut filtered_intervals = vec![];
+    for interval in speed_intervals.clone() {
+        if interval.start < 0.0 {
+            continue;
+        }
+        if interval.end < 0.0 {
+            let new_interval = Interval::new(interval.start, dist / MIN_TIME + 1.0);
+            filtered_intervals.push(new_interval);
+            continue;
+        }
+
+        filtered_intervals.push(interval);
+    }
+
+    loop {
+        //calculate speed based on time;
+        let v = dist / time;
+        //
+        //assume speed is ok
+        let mut speed_ok = true;
+        //
+        //check speed intervals
+        for interval in filtered_intervals.clone() {
+            let slower_speed = interval.start;
+            let faster_speed = interval.end;
+
+            if v >= slower_speed && v <= faster_speed {
+                speed_ok = false;
+                break;
+            }
+        }
+        //
+        //check for max speed
+        if let Some(m_sp) = max_speed {
+            if v > m_sp {
+                speed_ok = false;
+            }
+        }
+        //
+        //increase time if nesessery
+        if speed_ok {
+            return Some(v);
+        }
+        time += 1.0;
+        if time >= 100000.0 {
+            return None;
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum CARDINAL {
     SOUTH,
@@ -613,7 +2114,7 @@ impl Car {
         center: PointF,
     ) -> Self {
         let speed = CAR_MAX_SPEED;
-        let odo: f32 = -(CAR_LENGTH as f32 * 0.5);
+        let odo: f32 = -(CAR_LENGTH_F32 * 0.5);
         let timer: Instant = Instant::now();
         let vehicle_type: VehicleType = VehicleType::BlueCar;
 
@@ -660,5 +2161,16 @@ impl Statisics {
             max_time: None,
             min_time: None,
         }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Interval {
+    pub start: f32,
+    pub end: f32,
+}
+impl Interval {
+    pub fn new(start: f32, end: f32) -> Self {
+        Self { start, end }
     }
 }
