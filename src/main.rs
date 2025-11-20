@@ -21,7 +21,7 @@ fn main() {
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
-        .window("crossroads 2", SCREEN_WIDTH, SCREEN_HEIGHT)
+        .window(APP_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .build()
         .unwrap();

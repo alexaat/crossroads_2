@@ -1,5 +1,6 @@
 use crate::model::{Point, PointF};
 
+pub const APP_TITLE: &str = "crossroads 2";
 const SCALE: f32 = 1.0;
 const SCREEN_WIDTH_DEFAULT: u32 = 690;
 const SCREEN_HEIGHT_DEFAULT: u32 = 690;
