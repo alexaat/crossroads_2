@@ -1795,7 +1795,6 @@ impl Model {
             }
         }
 
-
         //Increase speed after junction
         let car_max_speed = (TOP_LEFT_F32.x + CAR_LENGTH_F32 * 0.5) / (MIN_TIME - 1.0);
 
@@ -1861,6 +1860,15 @@ impl Model {
             }
         }
         self.cars = filtered;
+
+        //recalculate speed
+        if self.counter % RE_CALCULATE_MOD == 0 {
+            self.recalculate_first_cars();
+        }
+
+        
+
+
     }
 
     fn build_lines() -> Vec<Line> {
@@ -1986,6 +1994,117 @@ impl Model {
             }
         }
     }
+
+    fn recalculate_first_cars(&mut self) {
+        let off_set = CAR_WIDTH_F32 * 3.5 + MARGIN_F32 * 7.0;
+        let mut west_ahead: Option<Car> = None;
+        let mut west_right: Option<Car> = None;
+        let mut east_ahead: Option<Car> = None;
+        let mut east_right: Option<Car> = None;
+        let mut north_ahead: Option<Car> = None;
+        let mut north_right: Option<Car> = None;
+        let mut south_ahead: Option<Car> = None;
+        let mut south_right: Option<Car> = None;
+                
+        let car_max_speed = (TOP_LEFT_F32.x + CAR_LENGTH_F32 * 0.5) / MIN_TIME;
+        for c in self.cars.clone() {
+            if c.speed >= car_max_speed {
+                continue;
+            }
+            //
+            if c.origin == CARDINAL::WEST {
+                //
+                if c.destination == Destination::AHEAD && c.center.x < BOTTOM_RIGHT_F32.x {
+                    Self::update_front_car(&mut west_ahead, c.clone());
+                }
+                //
+                if c.destination == Destination::RIGHT
+                    && c.center.x < TOP_LEFT_F32.x + off_set
+                {
+                    Self::update_front_car(&mut west_right, c.clone());
+                }
+            }
+            //
+            if c.origin == CARDINAL::EAST {
+                //
+                if c.destination == Destination::AHEAD && c.center.x > TOP_LEFT_F32.x {
+                    Self::update_front_car(&mut east_ahead, c.clone());
+                }
+                //
+                if c.destination == Destination::RIGHT
+                    && c.center.x > BOTTOM_RIGHT_F32.x - off_set
+                {
+                    Self::update_front_car(&mut east_right, c.clone());
+                }
+            }
+            //
+            if c.origin == CARDINAL::NORTH {
+                //
+                if c.destination == Destination::AHEAD && c.center.y < BOTTOM_RIGHT_F32.y {
+                    Self::update_front_car(&mut north_ahead, c.clone());
+                }
+                //
+                if c.destination == Destination::RIGHT
+                    && c.center.y < TOP_LEFT_F32.y + off_set
+                {
+                    Self::update_front_car(&mut north_right, c.clone());
+                }
+            }
+            //
+            if c.origin == CARDINAL::SOUTH {
+                //
+                if c.destination == Destination::AHEAD && c.center.y > TOP_LEFT_F32.y {
+                    Self::update_front_car(&mut south_ahead, c.clone());
+                }
+                //
+                if c.destination == Destination::RIGHT
+                    && c.center.y > BOTTOM_RIGHT_F32.y - off_set
+                {
+                    Self::update_front_car(&mut south_right, c.clone());
+                }
+            }
+        }
+
+        self.recalculate_speed_for_front_car(west_ahead);
+        self.recalculate_speed_for_front_car(west_right);
+        self.recalculate_speed_for_front_car(east_ahead);
+        self.recalculate_speed_for_front_car(east_right);
+        self.recalculate_speed_for_front_car(north_ahead);
+        self.recalculate_speed_for_front_car(north_right);
+        self.recalculate_speed_for_front_car(south_ahead);
+        self.recalculate_speed_for_front_car(south_right);
+
+        if self.cars.len() == 3 {
+            self.cars.sort_by(|a, b| a.id.partial_cmp(&b.id).unwrap());
+        }
+    }
+
+    pub fn update_front_car(target: &mut Option<Car>, c: Car) {
+        if let Some(front_car) = target {
+            if c.id < front_car.id {
+                *target = Some(c);
+            }
+        } else {
+            *target = Some(c);
+        }
+    }
+
+    pub fn recalculate_speed_for_front_car(&mut self, car_option: Option<Car>) {
+        if let Some(c) = car_option {
+            self.cars.retain(|x| x.id != c.id);
+            let mut c_clonned = c.clone();
+            let speed_option = self.calculate_speed(&mut c_clonned);
+            if let Some(speed) = speed_option {
+                if speed > c.speed {
+                    c_clonned.speed = speed;
+                }
+                self.cars.push(c_clonned);
+            } else {
+                self.cars.push(c_clonned);
+            }
+        }
+    }
+
 }
 
 pub fn get_speed_loop(
@@ -2045,6 +2164,8 @@ pub fn get_speed_loop(
         }
     }
 }
+
+
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CARDINAL {

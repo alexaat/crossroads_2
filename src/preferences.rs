@@ -70,6 +70,8 @@ pub static CAR_URLS: [&str; 3] = [
 pub static MIN_TIME: f32 = 50.0;
 pub static SPACE_GAP: f32 = 20.0;
 
+pub static RE_CALCULATE_MOD: u64 = 20;
+
 /*
 
     ____________________                         _____________________
