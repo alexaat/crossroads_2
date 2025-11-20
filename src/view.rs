@@ -1,17 +1,12 @@
 use super::*;
-use crate::model::Car;
-use crate::model::Line;
-use crate::model::VehicleType;
+use crate::model::*;
 use crate::preferences::*;
 use crate::ui::Text;
-use crate::Model;
 use sdl2::image::LoadTexture;
 use sdl2::pixels::Color;
-use sdl2::rect::Point;
-use sdl2::rect::Rect;
+use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
-use sdl2::ttf::Font;
-use sdl2::ttf::Sdl2TtfContext;
+use sdl2::ttf::{Font, Sdl2TtfContext};
 use sdl2::video::Window;
 use std::collections::HashMap;
 

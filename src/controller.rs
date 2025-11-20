@@ -1,7 +1,4 @@
-use crate::model::Destination;
-use crate::model::VehicleType;
-use crate::model::CARDINAL;
-use crate::Model;
+use crate::model::*;
 use crate::View;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;

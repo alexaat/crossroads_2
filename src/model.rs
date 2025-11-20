@@ -1608,17 +1608,17 @@ impl Model {
                     continue;
                 }
                 if car.destination == Destination::LEFT && car.center.x >= TOP_LEFT_F32.x {
-                    let w = 180.0 * car.speed / (SMALL_RADIUS_F32 * PI);
+                    let w = 180.0 * car.speed / (SMALL_RADIUS * PI);
                     car.rotation -= w;
                     let a = 180.0 + car.rotation;
 
-                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = SMALL_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = TOP_LEFT_F32.x + dx;
 
-                    let dy = -(SMALL_RADIUS_F32) * (a * PI / 180.0).cos();
+                    let dy = -(SMALL_RADIUS) * (a * PI / 180.0).cos();
                     car.center.y = TOP_LEFT_F32.y + dy;
 
-                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += SMALL_RADIUS * w.abs() * PI / 180.0;
                 }
 
                 //from west turn right
@@ -1629,17 +1629,17 @@ impl Model {
                     continue;
                 }
                 if car.destination == Destination::RIGHT && car.center.x >= TOP_LEFT_F32.x {
-                    let w = 180.0 * car.speed / (PI * BIG_RADIUS_F32);
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS);
                     car.rotation += w;
                     let a = car.rotation;
 
-                    let dx = ((a * PI / 180.0).sin()) * BIG_RADIUS_F32;
+                    let dx = ((a * PI / 180.0).sin()) * BIG_RADIUS;
                     car.center.x = TOP_LEFT_F32.x + dx;
 
-                    let dy = -((a * PI / 180.0).cos()) * BIG_RADIUS_F32;
+                    let dy = -((a * PI / 180.0).cos()) * BIG_RADIUS;
                     car.center.y = BOTTOM_RIGHT_F32.y + dy;
 
-                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += BIG_RADIUS * w.abs() * PI / 180.0;
                 }
             }
 
@@ -1654,17 +1654,17 @@ impl Model {
                 }
 
                 if car.destination == Destination::LEFT && car.center.x <= BOTTOM_RIGHT_F32.x {
-                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS);
                     car.rotation -= w;
                     let a = car.rotation;
 
-                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = SMALL_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = BOTTOM_RIGHT_F32.x - dx;
 
-                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = SMALL_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = BOTTOM_RIGHT_F32.y + dy;
 
-                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += SMALL_RADIUS * w.abs() * PI / 180.0;
                 }
 
                 //from east turn right
@@ -1685,13 +1685,13 @@ impl Model {
                     car.rotation += w;
                     let a = car.rotation;
 
-                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = BIG_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = BOTTOM_RIGHT_F32.x + dx;
 
-                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = BIG_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = TOP_LEFT_F32.y - dy;
 
-                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += BIG_RADIUS * w.abs() * PI / 180.0;
                 }
             }
 
@@ -1706,17 +1706,17 @@ impl Model {
                 }
 
                 if car.destination == Destination::LEFT && car.center.y >= TOP_LEFT_F32.y {
-                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS);
                     car.rotation -= w;
                     let a = car.rotation;
 
-                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = SMALL_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = BOTTOM_RIGHT_F32.x - dx;
 
-                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = SMALL_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = TOP_LEFT_F32.y + dy;
 
-                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += SMALL_RADIUS * w.abs() * PI / 180.0;
                 }
 
                 //from north turn right
@@ -1733,13 +1733,13 @@ impl Model {
                     car.rotation += w;
                     let a = car.rotation;
 
-                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = BIG_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = TOP_LEFT_F32.x + dx;
 
-                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = BIG_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = TOP_LEFT_F32.y - dy;
 
-                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += BIG_RADIUS * w.abs() * PI / 180.0;
                 }
             }
 
@@ -1757,17 +1757,17 @@ impl Model {
                 }
 
                 if car.destination == Destination::LEFT && car.center.y <= BOTTOM_RIGHT_F32.y {
-                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS_F32);
+                    let w = 180.0 * car.speed / (PI * SMALL_RADIUS);
                     car.rotation -= w;
                     let a = car.rotation;
 
-                    let dx = SMALL_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = SMALL_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = TOP_LEFT_F32.x - dx;
 
-                    let dy = SMALL_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = SMALL_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = BOTTOM_RIGHT_F32.y + dy;
 
-                    car.odo += SMALL_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += SMALL_RADIUS * w.abs() * PI / 180.0;
                 }
 
                 //from south to right
@@ -1780,17 +1780,17 @@ impl Model {
                 }
 
                 if car.destination == Destination::RIGHT && car.center.y <= BOTTOM_RIGHT_F32.y {
-                    let w = 180.0 * car.speed / (PI * BIG_RADIUS_F32);
+                    let w = 180.0 * car.speed / (PI * BIG_RADIUS);
                     car.rotation += w;
                     let a = car.rotation;
 
-                    let dx = BIG_RADIUS_F32 * (a * PI / 180.0).sin();
+                    let dx = BIG_RADIUS * (a * PI / 180.0).sin();
                     car.center.x = BOTTOM_RIGHT_F32.x + dx;
 
-                    let dy = BIG_RADIUS_F32 * (a * PI / 180.0).cos();
+                    let dy = BIG_RADIUS * (a * PI / 180.0).cos();
                     car.center.y = BOTTOM_RIGHT_F32.y - dy;
 
-                    car.odo += BIG_RADIUS_F32 * w.abs() * PI / 180.0;
+                    car.odo += BIG_RADIUS * w.abs() * PI / 180.0;
                 }
             }
         }
@@ -2164,8 +2164,6 @@ pub fn get_speed_loop(
         }
     }
 }
-
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum CARDINAL {

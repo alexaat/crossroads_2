@@ -1,4 +1,3 @@
-use crate::preferences::BIG_RADIUS;
 use crate::preferences::*;
 
 pub fn get_arc_len_with_straigh_path_one() -> ArcCalc {
