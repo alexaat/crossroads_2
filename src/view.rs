@@ -37,102 +37,7 @@ impl<'a> View<'a> {
         self.canvas.set_draw_color(Color::RGB(r, g, b));
         self.canvas.clear();
 
-        let carrigeway_width = (CAR_WIDTH * 3 + MARGIN * 6) * 2;
-        let field_width = (SCREEN_WIDTH - carrigeway_width) / 2;
-        let field_heigth = (SCREEN_HEIGHT - carrigeway_width) / 2;
-        let center = Point::new((field_width / 2) as i32, (field_heigth / 2) as i32);
-        let src = Rect::new(0, 0, field_width, field_heigth);
-
-        //draw background top-left
-        let dst = Rect::new(0, 0, field_width, field_heigth);
-        match self.texture_manager.textures.get("top_left") {
-            Some(texture) => {
-                if let Err(_) = self
-                    .canvas
-                    .copy_ex(texture, src, dst, 0.0, center, false, false)
-                {
-                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                    self.canvas.fill_rect(dst).unwrap();
-                }
-            }
-            None => {
-                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                self.canvas.fill_rect(dst).unwrap();
-            }
-        }
-        //draw background bottom-left
-        let dst = Rect::new(
-            0,
-            (field_heigth + carrigeway_width) as i32,
-            field_width,
-            field_heigth,
-        );
-
-        match self.texture_manager.textures.get("top_left") {
-            Some(texture) => {
-                if let Err(_) = self
-                    .canvas
-                    .copy_ex(texture, src, dst, 0.0, center, false, true)
-                {
-                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                    self.canvas.fill_rect(dst).unwrap();
-                }
-            }
-            None => {
-                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                self.canvas.fill_rect(dst).unwrap();
-            }
-        }
-        //draw background top-right
-        let dst = Rect::new(
-            (field_width + carrigeway_width) as i32,
-            0,
-            field_width,
-            field_heigth,
-        );
-
-        match self.texture_manager.textures.get("top_left") {
-            Some(texture) => {
-                if let Err(_) = self
-                    .canvas
-                    .copy_ex(texture, src, dst, 0.0, center, true, false)
-                {
-                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                    self.canvas.fill_rect(dst).unwrap();
-                }
-            }
-            None => {
-                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                self.canvas.fill_rect(dst).unwrap();
-            }
-        }
-        //draw background bottom-right
-        let dst = Rect::new(
-            (field_width + carrigeway_width) as i32,
-            (field_heigth + carrigeway_width) as i32,
-            field_width,
-            field_heigth,
-        );
-
-        match self.texture_manager.textures.get("top_left") {
-            Some(texture) => {
-                if let Err(_) = self
-                    .canvas
-                    .copy_ex(texture, src, dst, 0.0, center, true, true)
-                {
-                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                    self.canvas.fill_rect(dst).unwrap();
-                }
-            }
-            None => {
-                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
-                self.canvas.fill_rect(dst).unwrap();
-            }
-        }
-        //Draw road markings
-        for line in &model.lines {
-            line.draw(&mut self.canvas, None);
-        }
+        self.draw_background(&model.lines);
 
         //Draw cars
         for car in &model.cars {
@@ -143,7 +48,10 @@ impl<'a> View<'a> {
     }
 
     pub fn draw_statistics(&mut self, model: &Model) {
-            
+        self.canvas.clear(); 
+
+        self.draw_background(&model.lines);
+
         self.canvas.set_draw_color(Color::RGB(10, 10, 10));
         let _ = self.canvas.fill_rect(Rect::new(145, 195, 400, 300));
 
@@ -235,6 +143,102 @@ impl<'a> View<'a> {
 
         self.canvas.present();
     }
+
+    fn draw_background(&mut self, lines: &Vec<Line>){
+        let carrigeway_width = (CAR_WIDTH * 3 + MARGIN * 6) * 2;
+        let field_width = (SCREEN_WIDTH - carrigeway_width) / 2;
+        let field_heigth = (SCREEN_HEIGHT - carrigeway_width) / 2;
+        let center = Point::new((field_width / 2) as i32, (field_heigth / 2) as i32);
+        let src = Rect::new(0, 0, field_width, field_heigth);
+
+        //draw background top-left
+        let dst = Rect::new(0, 0, field_width, field_heigth);
+        match self.texture_manager.textures.get("top_left") {
+            Some(texture) => {
+                if let Err(_) = self.canvas
+                    .copy_ex(texture, src, dst, 0.0, center, false, false)
+                {
+                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                    self.canvas.fill_rect(dst).unwrap();
+                }
+            }
+            None => {
+                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                self.canvas.fill_rect(dst).unwrap();
+            }
+        }
+        //draw background bottom-left
+        let dst = Rect::new(
+            0,
+            (field_heigth + carrigeway_width) as i32,
+            field_width,
+            field_heigth,
+        );
+
+        match self.texture_manager.textures.get("top_left") {
+            Some(texture) => {
+                if let Err(_) = self.canvas
+                    .copy_ex(texture, src, dst, 0.0, center, false, true)
+                {
+                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                    self.canvas.fill_rect(dst).unwrap();
+                }
+            }
+            None => {
+                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                self.canvas.fill_rect(dst).unwrap();
+            }
+        }
+        //draw background top-right
+        let dst = Rect::new(
+            (field_width + carrigeway_width) as i32,
+            0,
+            field_width,
+            field_heigth,
+        );
+
+        match self.texture_manager.textures.get("top_left") {
+            Some(texture) => {
+                if let Err(_) = self.canvas
+                    .copy_ex(texture, src, dst, 0.0, center, true, false)
+                {
+                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                    self.canvas.fill_rect(dst).unwrap();
+                }
+            }
+            None => {
+                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                self.canvas.fill_rect(dst).unwrap();
+            }
+        }
+        //draw background bottom-right
+        let dst = Rect::new(
+            (field_width + carrigeway_width) as i32,
+            (field_heigth + carrigeway_width) as i32,
+            field_width,
+            field_heigth,
+        );
+
+        match self.texture_manager.textures.get("top_left") {
+            Some(texture) => {
+                if let Err(_) = self.canvas
+                    .copy_ex(texture, src, dst, 0.0, center, true, true)
+                {
+                    self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                    self.canvas.fill_rect(dst).unwrap();
+                }
+            }
+            None => {
+                self.canvas.set_draw_color(Color::RGB(0, 255, 0));
+                self.canvas.fill_rect(dst).unwrap();
+            }
+        }
+        //Draw road markings
+        for line in lines {
+            line.draw(&mut self.canvas, None);
+        }
+    }
+
 }
 
 impl Drawable for Line {
